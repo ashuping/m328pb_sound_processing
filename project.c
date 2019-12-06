@@ -43,6 +43,7 @@ int main(void){
 			sprintf(str, "%u words ready from ADC. Most recent is %x", words_ready, g_adc_val_buf[g_adc_val_buf_cur]);
 			println(str);
 		}
+		_delay_ms(100);
 	}
 	return 0;
 }
