@@ -1,0 +1,7 @@
+.vscode/
+atmega328pb_datasheet.pdf
+config.makerules
+
+*.o
+*.elf
+*.hex
