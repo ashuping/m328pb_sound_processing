@@ -1,0 +1,3 @@
+# Set the path to your extracted ATmega Family Device Support pack here, then rename this file to "config.makerules"
+
+SUPPORT_PACK=/path/to/your/extracted/atmega/family/device/support/pack/directory
