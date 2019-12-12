@@ -20,10 +20,11 @@ Copyright 2019 Alex Isabelle Shuping
 
 #include "common.h"
 #include "sampling.h"
+#include "goertzel.h"
 #include "usart.h"
 
 volatile uint16_t* g_adc_val_buf;
-volatile uint8_t g_adc_val_buf_cur;
+volatile uint16_t g_adc_val_buf_cur;
 volatile uint8_t g_adc_new_data;
 
 void setup_sampling(){
@@ -35,6 +36,9 @@ void setup_sampling(){
 }
 
 void setup_sampling_tcounter(){
+    // CAUTION! IF YOU CHANGE THE SAMPLING RATE, YOU MUST ALSO UPDATE THE
+    // PRECOMPUTED COEFFICIENTS IN goertzel.h - THESE ARE NOT COMPUTED
+    // AUTOMATICALLY!
     TCCR1B |= (1 << WGM12); // CTC-mode, use OCR1A
     OCR1A = (uint16_t)999; // Sample at 8kHz
     OCR1B = (uint16_t)999; // OCR1B is used for ADC auto-sampling
@@ -60,5 +64,9 @@ ISR(ADC_vect){
     g_adc_val_buf[(g_adc_val_buf_cur+1) % ADC_VAL_BUF_SIZE] = ADC;
     g_adc_val_buf_cur = (g_adc_val_buf_cur == ADC_VAL_BUF_SIZE) ? 0 : g_adc_val_buf_cur + 1;
     g_adc_new_data = (g_adc_new_data == 255) ? 255 : g_adc_new_data + 1;
+    goertzel_per_sample();
+    if(g_adc_val_buf_cur == ADC_VAL_BUF_SIZE){
+        goertzel_end_of_block();
+    }
     TIFR1 |= (1 << OCF1B);
 }

@@ -25,6 +25,7 @@ Copyright 2019 Alex Isabelle Shuping
 
 #include "common.h"
 #include "sampling.h"
+#include "goertzel.h"
 #include "usart.h"
 
 int main(void){
@@ -32,18 +33,32 @@ int main(void){
 	println("Initializing...");
 	setup_sampling();
 	start_sampling();
+	goertzel_ready = 0;
 	sei();
 	println("Beginning main loop...");
+
+	uint8_t values[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	uint8_t values_index = 0;
 	
 	while(1){
-		if(g_adc_new_data){
-			uint8_t words_ready = g_adc_new_data;
-			g_adc_new_data = 0;
-			char str[50]; // = 40 (text) + 3 (8-bit uint) + 4 (10-bit uint) + 2 (for good luck)
-			sprintf(str, "%u words ready from ADC. Most recent is %x", words_ready, g_adc_val_buf[g_adc_val_buf_cur]);
+		if(goertzel_ready){
+			values[values_index] = (uint8_t)target_freq_magnitude_squared;
+			values_index = values_index == 15 ? 0 : values_index+1;
+			
+			uint16_t sum = 0;
+			for(uint8_t i = 0; i < 16; ++i){
+				sum += values[i];
+			}
+
+			uint8_t sum_capped = sum > 255 ? 255 : (uint8_t)sum;
+
+			char str[50];
+			sprintf(str, "%i", sum_capped);
+			cli();
 			println(str);
+			sei();
+			goertzel_ready = 0;
 		}
-		_delay_ms(100);
 	}
 	return 0;
 }
