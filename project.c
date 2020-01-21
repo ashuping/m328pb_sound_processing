@@ -27,15 +27,17 @@ Copyright 2019 Alex Isabelle Shuping
 #include "sampling.h"
 #include "goertzel.h"
 #include "usart.h"
+#include "leds.h"
 
 int main(void){
-	setup_usart();
-	println("Initializing...");
 	setup_sampling();
+	setup_led_timer();
+	setup_tone();
 	start_sampling();
+	SET_LED_DUTY_CYCLE(0);
+	start_pwm();
 	goertzel_ready = 0;
 	sei();
-	println("Beginning main loop...");
 
 	uint8_t values[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	uint8_t values_index = 0;
@@ -51,12 +53,24 @@ int main(void){
 			}
 
 			uint8_t sum_capped = sum > 255 ? 255 : (uint8_t)sum;
+			if(sum_capped == 0){
+				stop_pwm();
+			}else{
+				if(sum_capped > 50){
+					start_tone();
+				}else{
+					stop_tone();
+				}
+				start_pwm();
+				SET_LED_DUTY_CYCLE(sum_capped);
+			}
+			
 
 			char str[50];
 			sprintf(str, "%i", sum_capped);
-			cli();
+			/*cli();
 			println(str);
-			sei();
+			sei();*/
 			goertzel_ready = 0;
 		}
 	}

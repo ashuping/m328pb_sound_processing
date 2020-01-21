@@ -3,7 +3,7 @@ include config.makerules # See README.md
 
 PNAME=project
 
-OTHER_MODULES=usart.o sampling.o goertzel.o
+OTHER_MODULES=usart.o sampling.o goertzel.o leds.o
 
 MCU?=atmega328pb
 MCUS?=atmega328p
@@ -50,6 +50,10 @@ sampling.o : sampling.c sampling.h
 goertzel.o : goertzel.c goertzel.h
 	echo "$(T_COMP) goertzel.c -> goertzel.o"
 	avr-gcc $(CF) -c goertzel.c $(CCOPTS)
+
+leds.o: leds.c leds.h
+	echo "$(T_COMP) leds.c -> leds.o"
+	avr-gcc $(CF) -c leds.c $(CCOPTS)
 
 UPLOAD : $(PNAME).hex
 	echo "$(T_UPL) $(PNAME).hex"
